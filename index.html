@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการการบ้าน</title>
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input, textarea, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .complete-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            float: right;
+        }
+        .complete-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>ระบบจัดการการบ้าน</h1>
+   
+    <h2>เพิ่มการบ้านใหม่</h2>
+    <form id="homeworkForm">
+        <input type="text" id="subject" placeholder="วิชา" required>
+        <input type="date" id="dueDate" required>
+        <textarea id="details" placeholder="รายละเอียดการบ้าน" required></textarea>
+        <button type="submit">เพิ่มการบ้าน</button>
+    </form>
+
+    <h2>รายการงานที่ค้างอยู่</h2>
+    <ul id="homeworkList"></ul>
+
+    <!-- เพิ่ม Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+
+    <script>
+        // ตั้งค่า Firebase (ค่าที่ได้รับจากรูปภาพ)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhpa4LyinAVcxQFDzNHShL-K1Ga9QrGpA",
+            authDomain: "homework-management-f90a9.firebaseapp.com",
+            databaseURL: "https://homework-management-f90a9-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "homework-management-f90a9",
+            storageBucket: "homework-management-f90a9.appspot.com",
+            messagingSenderId: "417589049621",
+            appId: "1:417589049621:web:b9fc88855a99bcc817111c",
+            measurementId: "G-D8KR95CG2P"
+        };
+
+        // เริ่มต้น Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const analytics = firebase.analytics();
+
+        // อ้างอิงฐานข้อมูล
+        const database = firebase.database();
+        const homeworkRef = database.ref('homeworks');
+
+        const homeworkForm = document.getElementById('homeworkForm');
+        const homeworkList = document.getElementById('homeworkList');
+
+        function addHomework(subject, dueDate, details) {
+            homeworkRef.push({
+                subject: subject,
+                dueDate: dueDate,
+                details: details
+            });
+        }
+
+        function removeHomework(id) {
+            homeworkRef.child(id).remove();
+        }
+
+        function displayHomeworks(snapshot) {
+            homeworkList.innerHTML = '';
+            snapshot.forEach(childSnapshot => {
+                const homework = childSnapshot.val();
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>${homework.subject}</strong> - กำหนดส่ง: ${homework.dueDate}
+                    <p>${homework.details}</p>
+                    <button class="complete-btn" onclick="removeHomework('${childSnapshot.key}')">เสร็จสิ้น</button>
+                `;
+                homeworkList.appendChild(li);
+            });
+        }
+
+        homeworkForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const subject = document.getElementById('subject').value;
+            const dueDate = document.getElementById('dueDate').value;
+            const details = document.getElementById('details').value;
+            addHomework(subject, dueDate, details);
+            homeworkForm.reset();
+        });
+
+        // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลงข้อมูล
+        homeworkRef.on('value', displayHomeworks);
+    </script>
+</body>
+</html>
