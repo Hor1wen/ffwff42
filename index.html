@@ -78,69 +78,46 @@
     <h2>รายการงานที่ค้างอยู่</h2>
     <ul id="homeworkList"></ul>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAhpq4LyinAVcxQFDzNHShL-K1Ga9QrGpA",
-            authDomain: "homework-management-f90a9.firebaseapp.com",
-            databaseURL: "https://homework-management-f90a9-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "homework-management-f90a9",
-            storageBucket: "homework-management-f90a9.appspot.com",
-            messagingSenderId: "417589049621",
-            appId: "1:417589049621:web:36718ee15416779817111c",
-            measurementId: "G-9VJ0ELMHJ7"
-        };
+        const homeworkForm = document.getElementById('homeworkForm');
+        const homeworkList = document.getElementById('homeworkList');
+        let homeworks = JSON.parse(localStorage.getItem('homeworks')) || [];
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const analytics = firebase.getAnalytics(app);
-        const db = firebase.getDatabase(app);
+        function saveHomeworks() {
+            localStorage.setItem('homeworks', JSON.stringify(homeworks));
+        }
 
-        // Function to add homework
         function addHomework(subject, dueDate, details) {
-            const homeworkRef = firebase.push(firebase.ref(db, 'homeworks/'));
-            firebase.set(homeworkRef, {
-                subject: subject,
-                dueDate: dueDate,
-                details: details
-            }).then(() => {
-                displayHomeworks();
-            });
+            const homework = {
+                id: Date.now(),
+                subject,
+                dueDate,
+                details
+            };
+            homeworks.push(homework);
+            saveHomeworks();
+            displayHomeworks();
         }
 
-        // Function to remove homework
         function removeHomework(id) {
-            const homeworkRef = firebase.ref(db, 'homeworks/' + id);
-            firebase.remove(homeworkRef).then(() => {
-                displayHomeworks();
-            });
+            homeworks = homeworks.filter(hw => hw.id !== id);
+            saveHomeworks();
+            displayHomeworks();
         }
 
-        // Function to display homeworks
         function displayHomeworks() {
-            const homeworkRef = firebase.ref(db, 'homeworks/');
-            firebase.onValue(homeworkRef, (snapshot) => {
-                const homeworks = snapshot.val();
-                homeworkList.innerHTML = '';
-                for (let id in homeworks) {
-                    const hw = homeworks[id];
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <strong>${hw.subject}</strong> - กำหนดส่ง: ${hw.dueDate}
-                        <p>${hw.details}</p>
-                        <button class="complete-btn" onclick="removeHomework('${id}')">เสร็จสิ้น</button>
-                    `;
-                    homeworkList.appendChild(li);
-                }
+            homeworkList.innerHTML = '';
+            homeworks.forEach(hw => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <strong>${hw.subject}</strong> - กำหนดส่ง: ${hw.dueDate}
+                    <p>${hw.details}</p>
+                    <button class="complete-btn" onclick="removeHomework(${hw.id})">เสร็จสิ้น</button>
+                `;
+                homeworkList.appendChild(li);
             });
         }
 
-        // Event listener for form submission
         homeworkForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const subject = document.getElementById('subject').value;
@@ -150,7 +127,7 @@
             homeworkForm.reset();
         });
 
-        // Display homeworks on page load
+        // แสดงการบ้านที่มีอยู่เมื่อโหลดหน้า
         displayHomeworks();
     </script>
 </body>
