@@ -79,12 +79,16 @@
     <ul id="homeworkList"></ul>
 
     <!-- เพิ่ม Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics.js"></script>
 
     <script>
-        // ตั้งค่า Firebase (ค่าที่ได้รับจากรูปภาพ)
+        // ตั้งค่า Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
+        import { getDatabase, ref, push, remove, onValue } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyAhpa4LyinAVcxQFDzNHShL-K1Ga9QrGpA",
             authDomain: "homework-management-f90a9.firebaseapp.com",
@@ -96,19 +100,18 @@
             measurementId: "G-D8KR95CG2P"
         };
 
-        // เริ่มต้น Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const analytics = firebase.analytics();
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
 
         // อ้างอิงฐานข้อมูล
-        const database = firebase.database();
-        const homeworkRef = database.ref('homeworks');
+        const homeworkRef = ref(database, 'homeworks');
 
         const homeworkForm = document.getElementById('homeworkForm');
         const homeworkList = document.getElementById('homeworkList');
 
         function addHomework(subject, dueDate, details) {
-            homeworkRef.push({
+            push(homeworkRef, {
                 subject: subject,
                 dueDate: dueDate,
                 details: details
@@ -116,7 +119,7 @@
         }
 
         function removeHomework(id) {
-            homeworkRef.child(id).remove();
+            remove(ref(database, 'homeworks/' + id));
         }
 
         function displayHomeworks(snapshot) {
@@ -143,7 +146,7 @@
         });
 
         // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลงข้อมูล
-        homeworkRef.on('value', displayHomeworks);
+        onValue(homeworkRef, displayHomeworks);
     </script>
 </body>
 </html>
