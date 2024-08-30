@@ -78,64 +78,69 @@
     <h2>รายการงานที่ค้างอยู่</h2>
     <ul id="homeworkList"></ul>
 
-    <!-- เพิ่ม Firebase SDK -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-analytics.js";
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
-        // Your web app's Firebase configuration
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAhpa4LyinAVcxQFDzNHShL-K1Ga9QrGpA",
+            apiKey: "AIzaSyAhpq4LyinAVcxQFDzNHShL-K1Ga9QrGpA",
             authDomain: "homework-management-f90a9.firebaseapp.com",
             databaseURL: "https://homework-management-f90a9-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "homework-management-f90a9",
             storageBucket: "homework-management-f90a9.appspot.com",
             messagingSenderId: "417589049621",
-            appId: "1:417589049621:web:b9fc88855a99bcc817111c",
-            measurementId: "G-D8KR95CG2P"
+            appId: "1:417589049621:web:36718ee15416779817111c",
+            measurementId: "G-9VJ0ELMHJ7"
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const database = getDatabase(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const analytics = firebase.getAnalytics(app);
+        const db = firebase.getDatabase(app);
 
-        // อ้างอิงฐานข้อมูล
-        const homeworkRef = ref(database, 'homeworks');
-
-        const homeworkForm = document.getElementById('homeworkForm');
-        const homeworkList = document.getElementById('homeworkList');
-
+        // Function to add homework
         function addHomework(subject, dueDate, details) {
-            const newHomeworkRef = push(homeworkRef);
-            set(newHomeworkRef, {
+            const homeworkRef = firebase.push(firebase.ref(db, 'homeworks/'));
+            firebase.set(homeworkRef, {
                 subject: subject,
                 dueDate: dueDate,
                 details: details
+            }).then(() => {
+                displayHomeworks();
             });
         }
 
+        // Function to remove homework
         function removeHomework(id) {
-            const homeworkToRemoveRef = ref(database, 'homeworks/' + id);
-            remove(homeworkToRemoveRef);
-        }
-
-        function displayHomeworks(snapshot) {
-            homeworkList.innerHTML = '';
-            snapshot.forEach(childSnapshot => {
-                const homework = childSnapshot.val();
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <strong>${homework.subject}</strong> - กำหนดส่ง: ${homework.dueDate}
-                    <p>${homework.details}</p>
-                    <button class="complete-btn" onclick="removeHomework('${childSnapshot.key}')">เสร็จสิ้น</button>
-                `;
-                homeworkList.appendChild(li);
+            const homeworkRef = firebase.ref(db, 'homeworks/' + id);
+            firebase.remove(homeworkRef).then(() => {
+                displayHomeworks();
             });
         }
 
+        // Function to display homeworks
+        function displayHomeworks() {
+            const homeworkRef = firebase.ref(db, 'homeworks/');
+            firebase.onValue(homeworkRef, (snapshot) => {
+                const homeworks = snapshot.val();
+                homeworkList.innerHTML = '';
+                for (let id in homeworks) {
+                    const hw = homeworks[id];
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>${hw.subject}</strong> - กำหนดส่ง: ${hw.dueDate}
+                        <p>${hw.details}</p>
+                        <button class="complete-btn" onclick="removeHomework('${id}')">เสร็จสิ้น</button>
+                    `;
+                    homeworkList.appendChild(li);
+                }
+            });
+        }
+
+        // Event listener for form submission
         homeworkForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const subject = document.getElementById('subject').value;
@@ -145,8 +150,8 @@
             homeworkForm.reset();
         });
 
-        // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลงข้อมูล
-        onValue(homeworkRef, displayHomeworks);
+        // Display homeworks on page load
+        displayHomeworks();
     </script>
 </body>
 </html>
