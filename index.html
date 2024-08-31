@@ -82,9 +82,10 @@
    
     <h2>เพิ่มการบ้านใหม่</h2>
     <form id="homeworkForm">
-        <input type="text" id="subject" placeholder="วิชา" required>
-        <input type="date" id="dueDate" required>
-        <textarea id="details" placeholder="รายละเอียดการบ้าน" required></textarea>
+        <input type="text" id="subject" placeholder="วิชา">
+        <input type="date" id="dueDate">
+        <textarea id="details" placeholder="รายละเอียดการบ้าน"></textarea>
+        <input type="file" id="imageUpload" accept="image/*">
         <button type="submit">เพิ่มการบ้าน</button>
     </form>
 
@@ -117,6 +118,7 @@
         const homeworkForm = document.getElementById('homeworkForm');
         const homeworkList = document.getElementById('homeworkList');
         const statusDiv = document.getElementById('status');
+        const imageUpload = document.getElementById('imageUpload');
 
         function showStatus(message, isError = false) {
             statusDiv.textContent = message;
@@ -129,34 +131,31 @@
             }, 5000);
         }
 
-        function addHomework(subject, dueDate, details) {
-            console.log('Attempting to add homework:', { subject, dueDate, details });
+        function addHomework(subject, dueDate, details, imageUrl) {
+            const timestamp = new Date().toLocaleString('th-TH');
             const newHomeworkRef = database.ref('homeworks').push();
             newHomeworkRef.set({
-                subject: subject,
-                dueDate: dueDate,
-                details: details
+                subject: subject || "ไม่ระบุวิชา",
+                dueDate: dueDate || "ไม่ระบุกำหนดส่ง",
+                details: details || "ไม่มีรายละเอียด",
+                imageUrl: imageUrl || "",
+                timestamp: timestamp
             })
             .then(() => {
-                console.log('Homework added successfully');
                 showStatus('เพิ่มการบ้านเรียบร้อยแล้ว');
                 homeworkForm.reset();
             })
             .catch((error) => {
-                console.error('Error adding homework:', error);
                 showStatus('เกิดข้อผิดพลาดในการเพิ่มการบ้าน: ' + error.message, true);
             });
         }
 
         function removeHomework(id) {
-            console.log('Attempting to remove homework:', id);
             database.ref('homeworks/' + id).remove()
             .then(() => {
-                console.log('Homework removed successfully');
                 showStatus('ลบการบ้านเรียบร้อยแล้ว');
             })
             .catch((error) => {
-                console.error('Error removing homework:', error);
                 showStatus('เกิดข้อผิดพลาดในการลบการบ้าน: ' + error.message, true);
             });
         }
@@ -171,8 +170,10 @@
                 const hw = homeworks[id];
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <strong>${hw.subject}</strong> - กำหนดส่ง: ${hw.dueDate}
+                    <strong>${hw.subject}</strong> - กำหนดส่ง: ${hw.dueDate} <br>
+                    <small>เพิ่มเมื่อ: ${hw.timestamp}</small>
                     <p>${hw.details}</p>
+                    ${hw.imageUrl ? `<img src="${hw.imageUrl}" alt="รูปการบ้าน" style="max-width: 100%; height: auto;">` : ''}
                     <button class="complete-btn" onclick="removeHomework('${id}')">เสร็จสิ้น</button>
                 `;
                 homeworkList.appendChild(li);
@@ -181,32 +182,35 @@
 
         homeworkForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Form submitted');
             const subject = document.getElementById('subject').value;
             const dueDate = document.getElementById('dueDate').value;
             const details = document.getElementById('details').value;
-            console.log('Form values:', { subject, dueDate, details });
-            addHomework(subject, dueDate, details);
+
+            const imageFile = imageUpload.files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageUrl = event.target.result;
+                    addHomework(subject, dueDate, details, imageUrl);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                addHomework(subject, dueDate, details, "");
+            }
         });
 
-        // ฟังก์ชันสำหรับรับข้อมูลแบบเรียลไทม์
         database.ref('homeworks').on('value', (snapshot) => {
-            console.log('Data updated from Firebase');
             const data = snapshot.val();
             displayHomeworks(data);
         }, (error) => {
-            console.error('Error fetching data:', error);
             showStatus('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message, true);
         });
 
-        // ตรวจสอบการเชื่อมต่อ Firebase
         const connectedRef = database.ref(".info/connected");
         connectedRef.on("value", (snap) => {
             if (snap.val() === true) {
-                console.log("Connected to Firebase");
                 showStatus("เชื่อมต่อกับ Firebase สำเร็จ");
             } else {
-                console.log("Not connected to Firebase");
                 showStatus("ไม่สามารถเชื่อมต่อกับ Firebase", true);
             }
         });
