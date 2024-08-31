@@ -3,13 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการการบ้าน</title>
+    <title>ระบบจัดการการบ้าน (ออนไลน์)</title>
     <style>
-        /* CSS styles remain the same */
+        body {
+            font-family: 'Sarabun', sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input, textarea, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .complete-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            float: right;
+        }
+        .complete-btn:hover {
+            background-color: #27ae60;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
-    <h1>ระบบจัดการการบ้าน</h1>
+    <h1>ระบบจัดการการบ้าน (ออนไลน์)</h1>
    
     <h2>เพิ่มการบ้านใหม่</h2>
     <form id="homeworkForm">
@@ -19,16 +88,17 @@
         <button type="submit">เพิ่มการบ้าน</button>
     </form>
 
+    <div id="status"></div>
+
     <h2>รายการงานที่ค้างอยู่</h2>
     <ul id="homeworkList"></ul>
 
-    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <!-- Add Firebase products that you want to use -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- เพิ่ม Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase configuration
+        // กำหนดค่าการเชื่อมต่อ Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAhpq4LyinAVcxQFDzNHShL-K1Ga9QrGpA",
             authDomain: "homework-management-f90a9.firebaseapp.com",
@@ -40,31 +110,63 @@
             measurementId: "G-9VJ0ELMHJ7"
         };
 
-        // Initialize Firebase
+        // เริ่มต้นใช้งาน Firebase
         firebase.initializeApp(firebaseConfig);
-
-        // Get a reference to the database service
         const database = firebase.database();
 
         const homeworkForm = document.getElementById('homeworkForm');
         const homeworkList = document.getElementById('homeworkList');
+        const statusDiv = document.getElementById('status');
+
+        function showStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.className = isError ? 'error' : 'success';
+            statusDiv.style.display = 'block';
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
 
         function addHomework(subject, dueDate, details) {
-            // Push the new homework to the database
-            database.ref('homeworks').push({
+            console.log('Attempting to add homework:', { subject, dueDate, details });
+            const newHomeworkRef = database.ref('homeworks').push();
+            newHomeworkRef.set({
                 subject: subject,
                 dueDate: dueDate,
                 details: details
+            })
+            .then(() => {
+                console.log('Homework added successfully');
+                showStatus('เพิ่มการบ้านเรียบร้อยแล้ว');
+                homeworkForm.reset();
+            })
+            .catch((error) => {
+                console.error('Error adding homework:', error);
+                showStatus('เกิดข้อผิดพลาดในการเพิ่มการบ้าน: ' + error.message, true);
             });
         }
 
         function removeHomework(id) {
-            // Remove the homework from the database
-            database.ref('homeworks/' + id).remove();
+            console.log('Attempting to remove homework:', id);
+            database.ref('homeworks/' + id).remove()
+            .then(() => {
+                console.log('Homework removed successfully');
+                showStatus('ลบการบ้านเรียบร้อยแล้ว');
+            })
+            .catch((error) => {
+                console.error('Error removing homework:', error);
+                showStatus('เกิดข้อผิดพลาดในการลบการบ้าน: ' + error.message, true);
+            });
         }
 
         function displayHomeworks(homeworks) {
             homeworkList.innerHTML = '';
+            if (!homeworks) {
+                homeworkList.innerHTML = '<li>ไม่มีการบ้านในขณะนี้</li>';
+                return;
+            }
             for (let id in homeworks) {
                 const hw = homeworks[id];
                 const li = document.createElement('li');
@@ -79,17 +181,34 @@
 
         homeworkForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Form submitted');
             const subject = document.getElementById('subject').value;
             const dueDate = document.getElementById('dueDate').value;
             const details = document.getElementById('details').value;
+            console.log('Form values:', { subject, dueDate, details });
             addHomework(subject, dueDate, details);
-            homeworkForm.reset();
         });
 
-        // Listen for changes in the database and update the display
+        // ฟังก์ชันสำหรับรับข้อมูลแบบเรียลไทม์
         database.ref('homeworks').on('value', (snapshot) => {
-            const homeworks = snapshot.val();
-            displayHomeworks(homeworks);
+            console.log('Data updated from Firebase');
+            const data = snapshot.val();
+            displayHomeworks(data);
+        }, (error) => {
+            console.error('Error fetching data:', error);
+            showStatus('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message, true);
+        });
+
+        // ตรวจสอบการเชื่อมต่อ Firebase
+        const connectedRef = database.ref(".info/connected");
+        connectedRef.on("value", (snap) => {
+            if (snap.val() === true) {
+                console.log("Connected to Firebase");
+                showStatus("เชื่อมต่อกับ Firebase สำเร็จ");
+            } else {
+                console.log("Not connected to Firebase");
+                showStatus("ไม่สามารถเชื่อมต่อกับ Firebase", true);
+            }
         });
     </script>
 </body>
