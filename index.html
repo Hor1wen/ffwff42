@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Work Online</title>
+    <title>ระบบจัดการการบ้านออนไลน์ Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4a90e2;
-            --secondary-color: #f39c12;
-            --background-color: #f4f7f6;
-            --text-color: #333;
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
             --card-background: #fff;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
         }
         body {
             font-family: 'Sarabun', sans-serif;
@@ -21,9 +22,10 @@
             padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
+            line-height: 1.6;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -46,7 +48,7 @@
             box-shadow: var(--shadow);
             padding: 20px;
             margin-bottom: 20px;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
         .card:hover {
             transform: translateY(-5px);
@@ -64,22 +66,29 @@
         }
         input, textarea, select, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
             font-family: 'Sarabun', sans-serif;
+            transition: var(--transition);
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         button {
             background-color: var(--primary-color);
             color: white;
             border: none;
             cursor: pointer;
-            transition: background-color 0.3s;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         button:hover {
-            background-color: #3a7bc8;
+            background-color: #2980b9;
         }
         .homework-list {
             list-style-type: none;
@@ -88,12 +97,12 @@
         .homework-item {
             background-color: var(--card-background);
             border-left: 5px solid var(--primary-color);
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
             border-radius: 4px;
             box-shadow: var(--shadow);
             position: relative;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
         .homework-item:hover {
             transform: translateY(-3px);
@@ -102,20 +111,22 @@
         .homework-item h3 {
             margin-top: 0;
             color: var(--primary-color);
+            font-size: 1.4em;
         }
         .homework-item p {
-            margin: 5px 0;
+            margin: 10px 0;
         }
         .homework-item img {
             max-width: 100%;
             height: auto;
             border-radius: 4px;
-            margin-top: 10px;
+            margin-top: 15px;
         }
         .actions {
             position: absolute;
             top: 15px;
             right: 15px;
+            display: flex;
         }
         .actions button {
             background-color: transparent;
@@ -124,23 +135,29 @@
             margin-left: 10px;
             font-size: 18px;
             color: #7f8c8d;
-            transition: color 0.3s;
+            transition: var(--transition);
+            padding: 5px;
         }
         .actions button:hover {
             color: var(--primary-color);
         }
         #status {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
             padding: 10px 20px;
             border-radius: 4px;
             display: none;
             z-index: 1000;
             font-weight: 600;
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .success {
-            background-color: #2ecc71;
+            background-color: var(--secondary-color);
             color: white;
         }
         .error {
@@ -160,9 +177,11 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .filter-sort select {
-            width: 48%;
+            width: calc(33% - 10px);
+            margin-bottom: 10px;
         }
         .modal {
             display: none;
@@ -174,15 +193,21 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.4);
+            animation: fadeIn 0.3s ease-out;
         }
         .modal-content {
             background-color: var(--card-background);
             margin: 10% auto;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: var(--shadow);
             width: 60%;
             max-width: 500px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .close {
             color: #aaa;
@@ -190,12 +215,72 @@
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
+            transition: var(--transition);
         }
         .close:hover,
         .close:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
+            color: var(--text-color);
+        }
+        .priority-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .priority-high .priority-indicator { background-color: #e74c3c; }
+        .priority-medium .priority-indicator { background-color: #f39c12; }
+        .priority-low .priority-indicator { background-color: #2ecc71; }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 15px;
+            text-align: center;
+            width: 30%;
+        }
+        .stat-card h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        .stat-card p {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0 0;
+        }
+        #searchInput {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .empty-state i {
+            font-size: 3em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .loading i {
+            font-size: 2em;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         @media (max-width: 768px) {
             .container {
@@ -211,15 +296,37 @@
             .modal-content {
                 width: 90%;
             }
+            .stats {
+                flex-direction: column;
+            }
+            .stat-card {
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>ระบบจัดการการบ้านออนไลน์</h1>
+        <h1>ระบบจัดการการบ้านออนไลน์ Pro</h1>
     </header>
 
     <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <h3>การบ้านทั้งหมด</h3>
+                <p id="totalHomeworks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>ครบกำหนดวันนี้</h3>
+                <p id="dueTodayHomeworks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>เลยกำหนด</h3>
+                <p id="overdueHomeworks">0</p>
+            </div>
+        </div>
+
         <div class="card">
             <h2>เพิ่มการบ้านใหม่</h2>
             <form id="homeworkForm">
@@ -239,6 +346,7 @@
 
         <div class="card">
             <h2>รายการงานที่ค้างอยู่</h2>
+            <input type="text" id="searchInput" placeholder="ค้นหาการบ้าน...">
             <div class="filter-sort">
                 <select id="filterPriority">
                     <option value="all">ทุกระดับความสำคัญ</option>
@@ -251,8 +359,15 @@
                     <option value="priority">เรียงตามความสำคัญ</option>
                     <option value="subject">เรียงตามวิชา</option>
                 </select>
+                <select id="filterStatus">
+                    <option value="all">ทุกสถานะ</option>
+                    <option value="pending">ค้างอยู่</option>
+                    <option value="completed">เสร็จแล้ว</option>
+                </select>
             </div>
-            <ul id="homeworkList" class="homework-list"></ul>
+            <div id="homeworkListContainer">
+                <div class="loading"><i class="fas fa-spinner"></i></div>
+            </div>
         </div>
     </div>
 
@@ -271,6 +386,10 @@
                     <option value="low">ต่ำ</option>
                 </select>
                 <input type="file" id="editImageUpload" accept="image/*">
+                <div>
+                    <input type="checkbox" id="editCompleted">
+                    <label for="editCompleted">เสร็จแล้ว</label>
+                </div>
                 <button type="submit">บันทึกการแก้ไข</button>
             </form>
         </div>
@@ -298,11 +417,13 @@
         const storage = firebase.storage();
 
         const homeworkForm = document.getElementById('homeworkForm');
-        const homeworkList = document.getElementById('homeworkList');
+        const homeworkListContainer = document.getElementById('homeworkListContainer');
         const statusDiv = document.getElementById('status');
         const imageUpload = document.getElementById('imageUpload');
         const filterPriority = document.getElementById('filterPriority');
         const sortBy = document.getElementById('sortBy');
+        const filterStatus = document.getElementById('filterStatus');
+        const searchInput = document.getElementById('searchInput');
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('editForm');
         const closeBtn = document.getElementsByClassName('close')[0];
@@ -338,7 +459,8 @@
                     details,
                     priority,
                     imageUrl,
-                    timestamp
+                    timestamp,
+                    completed: false
                 });
                 showStatus('เพิ่มการบ้านเรียบร้อยแล้ว');
                 homeworkForm.reset();
@@ -359,9 +481,9 @@
             }
         }
 
-        async function editHomework(id, subject, dueDate, details, priority, newImageFile) {
-         try {
-                let updateData = { subject, dueDate, details, priority };
+        async function editHomework(id, subject, dueDate, details, priority, completed, newImageFile) {
+            try {
+                let updateData = { subject, dueDate, details, priority, completed };
                 if (newImageFile) {
                     const imageUrl = await uploadImage(newImageFile);
                     updateData.imageUrl = imageUrl;
@@ -375,28 +497,49 @@
         }
 
         function displayHomeworks() {
-            homeworkList.innerHTML = '';
-            if (Object.keys(homeworks).length === 0) {
-                homeworkList.innerHTML = '<li class="homework-item">ไม่มีการบ้านในขณะนี้</li>';
+            const filteredAndSortedHomeworks = Object.entries(homeworks)
+                .filter(([_, hw]) => {
+                    const matchesPriority = filterPriority.value === 'all' || hw.priority === filterPriority.value;
+                    const matchesStatus = filterStatus.value === 'all' || 
+                        (filterStatus.value === 'completed' && hw.completed) || 
+                        (filterStatus.value === 'pending' && !hw.completed);
+                    const matchesSearch = hw.subject.toLowerCase().includes(searchInput.value.toLowerCase()) ||
+                        hw.details.toLowerCase().includes(searchInput.value.toLowerCase());
+                    return matchesPriority && matchesStatus && matchesSearch;
+                })
+                .sort((a, b) => {
+                    const criteriaA = sortBy.value === 'dueDate' ? a[1].dueDate : 
+                                      sortBy.value === 'priority' ? a[1].priority :
+                                      a[1].subject;
+                    const criteriaB = sortBy.value === 'dueDate' ? b[1].dueDate : 
+                                      sortBy.value === 'priority' ? b[1].priority :
+                                      b[1].subject;
+                    return criteriaA.localeCompare(criteriaB);
+                });
+
+            if (filteredAndSortedHomeworks.length === 0) {
+                homeworkListContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <h3>ไม่พบการบ้าน</h3>
+                        <p>เพิ่มการบ้านใหม่เพื่อเริ่มต้นใช้งาน!</p>
+                    </div>
+                `;
                 return;
             }
-            const sortedHomeworks = Object.entries(homeworks).sort((a, b) => {
-                const criteriaA = sortBy.value === 'dueDate' ? a[1].dueDate : 
-                                  sortBy.value === 'priority' ? a[1].priority :
-                                  a[1].subject;
-                const criteriaB = sortBy.value === 'dueDate' ? b[1].dueDate : 
-                                  sortBy.value === 'priority' ? b[1].priority :
-                                  b[1].subject;
-                return criteriaA.localeCompare(criteriaB);
-            });
 
-            for (let [id, hw] of sortedHomeworks) {
-                if (filterPriority.value !== 'all' && hw.priority !== filterPriority.value) continue;
-                
+            const homeworkList = document.createElement('ul');
+            homeworkList.className = 'homework-list';
+
+            for (let [id, hw] of filteredAndSortedHomeworks) {
                 const li = document.createElement('li');
-                li.className = `homework-item priority-${hw.priority}`;
+                li.className = `homework-item priority-${hw.priority} ${hw.completed ? 'completed' : ''}`;
                 li.innerHTML = `
-                    <h3>${hw.subject}</h3>
+                    <h3>
+                        <span class="priority-indicator"></span>
+                        ${hw.subject}
+                        ${hw.completed ? '<span class="completed-badge"><i class="fas fa-check-circle"></i> เสร็จแล้ว</span>' : ''}
+                    </h3>
                     <p><strong>กำหนดส่ง:</strong> ${new Date(hw.dueDate).toLocaleDateString('th-TH')}</p>
                     <p><strong>ความสำคัญ:</strong> ${hw.priority === 'high' ? 'สูง' : hw.priority === 'medium' ? 'ปานกลาง' : 'ต่ำ'}</p>
                     <p>${hw.details}</p>
@@ -408,6 +551,23 @@
                 `;
                 homeworkList.appendChild(li);
             }
+
+            homeworkListContainer.innerHTML = '';
+            homeworkListContainer.appendChild(homeworkList);
+            updateStats();
+        }
+
+        function updateStats() {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const totalHomeworks = Object.keys(homeworks).length;
+            const dueTodayHomeworks = Object.values(homeworks).filter(hw => new Date(hw.dueDate).toDateString() === today.toDateString()).length;
+            const overdueHomeworks = Object.values(homeworks).filter(hw => new Date(hw.dueDate) < today && !hw.completed).length;
+
+            document.getElementById('totalHomeworks').textContent = totalHomeworks;
+            document.getElementById('dueTodayHomeworks').textContent = dueTodayHomeworks;
+            document.getElementById('overdueHomeworks').textContent = overdueHomeworks;
         }
 
         function openEditModal(id) {
@@ -417,6 +577,7 @@
             document.getElementById('editDueDate').value = hw.dueDate;
             document.getElementById('editDetails').value = hw.details;
             document.getElementById('editPriority').value = hw.priority;
+            document.getElementById('editCompleted').checked = hw.completed;
             editModal.style.display = 'block';
         }
 
@@ -438,13 +599,16 @@
             const dueDate = document.getElementById('editDueDate').value;
             const details = document.getElementById('editDetails').value;
             const priority = document.getElementById('editPriority').value;
+            const completed = document.getElementById('editCompleted').checked;
             const imageFile = document.getElementById('editImageUpload').files[0];
 
-            await editHomework(id, subject, dueDate, details, priority, imageFile);
+            await editHomework(id, subject, dueDate, details, priority, completed, imageFile);
         });
 
         filterPriority.addEventListener('change', displayHomeworks);
         sortBy.addEventListener('change', displayHomeworks);
+        filterStatus.addEventListener('change', displayHomeworks);
+        searchInput.addEventListener('input', displayHomeworks);
 
         closeBtn.onclick = function() {
             editModal.style.display = 'none';
